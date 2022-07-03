@@ -1,0 +1,113 @@
+(
+	defstruct nodesch
+	
+		state
+		path
+		cost
+		cost-and-heuristics
+)
+
+
+
+(
+	defun successors(node)
+		(setf all_successors '())
+		
+		(do((i 0 (incf i))) ((= i (length *operators*)) all_successors)
+			(setf new_state (successor node (nth i *operators*)))
+			
+			(cond 	(new_state
+					(setf new_cost (+ (cost-of-applying-operator (nodesch-state node) (nth i *operators*)) (nodesch-cost node)))
+					(setf new_node (make-nodesch
+									:state new_state
+									:path (cons (nth i *operators*) (nodesch-path node))
+									:cost new_cost
+									:cost-and-heuristics (+ new_cost (heuristics new_state))
+					))
+					(push new_node all_successors)
+					)
+			)
+			
+		)
+		
+)
+
+(
+	defun myapply (operator state)
+		(funcall (symbol-function operator) state)
+)
+
+(
+	defun successor(node operator)
+		(myapply operator (nodesch-state node))
+)
+
+
+
+(
+	defun is-better(node nodes)
+		(dolist (x nodes)
+			(if (and (equalp (nodesch-state node) (nodesch-state x)) (<= (nodesch-cost x) (nodesch-cost node))) (return T))
+		)
+)
+
+
+
+(
+	defun remove-worse(l1 l2 l3)
+		(setf new_list '())
+		
+		(dolist (x l1 new_list)
+			(if (or (is-better x l2) (is-better x l3)) ()(push x new_list))
+		)		
+)
+
+
+
+(
+	defun new-or-better-successors(node l1 l2)
+		(remove-worse (successors node) l1 l2)
+)
+
+
+(
+	defun order-by-cost-plus-heuristics(nodes)
+		(sort nodes #'< :key #'nodesch-cost-and-heuristics)
+		
+)
+
+
+
+
+(
+	defun a*algorithm()
+		(setf node1 (make-nodesch 
+			:state *initial-state*
+			:path '()
+			:cost 0
+			:cost-and-heuristics (heuristics *initial-state*)
+		) )
+
+		(setf open '())
+		(push node1 open)
+		(setf closed '())
+		(setf actual nil)
+		(setf new-successors '())
+		
+		(loop  
+			(if (= (length open) 0) (return))
+			
+			(setf actual (car open))
+			(setf open (cdr open))
+			(push actual closed)
+			
+			(cond	((is-final (nodesch-state actual))  (return actual))
+					(t 
+					(setf new-successors (new-or-better-successors actual open closed))
+					(setf open (nconc new-successors open))
+					(order-by-cost-plus-heuristics open)
+					)
+			)
+			
+		)
+)

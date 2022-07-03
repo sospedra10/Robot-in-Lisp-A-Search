@@ -1,0 +1,16 @@
+
+First of all, the structure nodesch would change for both cases.
+
+The structure nodesch in the optimal search would only have state, path and cost 
+whereas  the best-first search would only have state, path and heuristics.
+We would have to take that in account for making the new node in successors with the correct data.
+
+In the best-first search we would not use remove-worse, we should use just remove-node to remove the nodes we that are already in open or closed.
+In the optimal search we would use remove-worse taking in account the cost path.
+
+Then, when adding the new successors to open,
+in the best-first search we should add successors at the end of open ordering it in an increasing
+way acording to the heuristics, whereas in the optimal search we should add them at the end ordering 
+it in an increasing way but according to their costs paths
+
+
